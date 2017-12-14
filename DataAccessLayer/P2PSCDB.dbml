@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?><Database Name="P2PSC" Class="P2PSCDBDataContext" xmlns="http://schemas.microsoft.com/linqtosql/dbml/2007">
+  <Connection Mode="AppSettings" ConnectionString="Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=|DataDirectory|\P2PSC.mdf;Integrated Security=True;Connect Timeout=30" SettingsObjectName="P2PSimpleChat.DAL.Properties.Settings" SettingsPropertyName="P2PSCConnectionString" Provider="System.Data.SqlClient" />
+  <Table Name="dbo.Setting" Member="Settings">
+    <Type Name="Setting">
+      <Column Name="[Key]" Member="Key" Type="System.String" DbType="VarChar(50) NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="Value" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+      <Column Name="Extra" Type="System.String" DbType="VarChar(50)" CanBeNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.Help" Member="Helps">
+    <Type Name="Help">
+      <Column Name="Topic" Type="System.String" DbType="VarChar(50) NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="Discussion" Type="System.String" DbType="VarChar(2048)" CanBeNull="true" />
+    </Type>
+  </Table>
+</Database>

@@ -17,6 +17,11 @@ namespace P2PSimpleChat.PL
         P2PSimpleChat.BLL.Client client;
         private string saveFilePathPrefix = "D:\\";
         private bool fileSelected = false;
+        private WelcomeForm welcomeForm;
+        public WelcomeForm WelcomeForm
+        {
+            get { return this.welcomeForm; }
+        }
 
         public Form1()
         {
@@ -24,6 +29,14 @@ namespace P2PSimpleChat.PL
             InitializeCustom();
             //this.listBox1.Text = "";
             this.textBox1.Text = this.textBox3.Text = "127.0.0.1";
+        }
+        public Form1(WelcomeForm wf)
+        {
+            InitializeComponent();
+            InitializeCustom();
+            //this.listBox1.Text = "";
+            this.textBox1.Text = this.textBox3.Text = "127.0.0.1";
+            this.welcomeForm = wf;
         }
         private void InitializeCustom()
         {
@@ -37,13 +50,35 @@ namespace P2PSimpleChat.PL
             this.tableLayoutPanel1.BackColor = CustomColors.ChatBodyBackColor;
             this.button3.BackColor = CustomColors.SendButtonBackColor;
             this.button4.BackColor = CustomColors.SelectFileBackColor;
-            richTextBox2.BackColor = CustomColors.SoftWhite;
+            this.richTextBox1.BackColor = CustomColors.SoftWhite;
             this.richTextBox2.BackColor = CustomColors.SoftWhite;
             this.textBox1.BackColor = CustomColors.SoftWhite;
             this.textBox2.BackColor = CustomColors.SoftWhite;
             this.textBox3.BackColor = CustomColors.SoftWhite;
             this.textBox4.BackColor = CustomColors.SoftWhite;
             this.button1.BackColor = this.button2.BackColor = CustomColors.Lynch;
+            this.richTextBox2.ReadOnly = true;
+        }
+        private void ResetPeerFields()
+        {
+            this.ResetMyPeerFields();
+            this.ResetTargetPeerFields();
+        }
+        private void ResetMyPeerFields()
+        {
+            this.button1.Text = "Start";
+            this.textBox1.Text = "127.0.0.1";
+            this.textBox2.Text = "";
+            this.textBox1.Enabled = true;
+            this.textBox2.Enabled = true;
+        }
+        private void ResetTargetPeerFields()
+        {
+            this.button2.Text = "Connect";
+            this.textBox3.Text = "127.0.0.1";
+            this.textBox4.Text = "";
+            this.textBox3.Enabled = true;
+            this.textBox4.Enabled = true;
         }
         private void button1_Click(object sender, EventArgs e)
         {
@@ -51,8 +86,16 @@ namespace P2PSimpleChat.PL
             {
                 this.server.Stop();
                 System.Threading.Thread.Sleep(200);
+                try
+                {
+                    this.client.Close();
+                }
+                catch
+                {
+                }
                 this.server = null;
-                this.button1.Text = "Start";
+                this.client = null;
+                this.ResetPeerFields();
                 return;
             }
             // peer start button click
@@ -87,14 +130,74 @@ namespace P2PSimpleChat.PL
             this.groupBox2.Enabled = true;
             this.textBox3.Text = "";
             this.textBox4.Text = "";
-            this.client.Close();
+            this.textBox3.Enabled = true;
+            this.textBox4.Enabled = true;
+            this.button2.Text = "Connect";
+            try
+            {
+                this.client.Close();
+            }
+            catch
+            {
+            }
             this.client = null;
+        }
+        private void AddSmiley(string message)
+        {
+            this.richTextBox2.ReadOnly = false;
+            char previous_char = ' ';
+            bool smiley_processed = false;
+            foreach (char c in message)
+            {
+                if (previous_char == ':' && c == ')')
+                {
+                    try
+                    {
+                        System.Windows.Forms.Clipboard.SetImage(Properties.Resources.Happy);
+                        this.richTextBox2.Paste();
+                        smiley_processed = true;
+                    }
+                    catch (Exception ex)
+                    {
+                        this.label7.Text = ex.Message;
+                        this.label7.ForeColor = System.Drawing.Color.Red;
+                    }
+                }
+                else if (previous_char == ':' && c == '(')
+                {
+                    try
+                    {
+                        System.Windows.Forms.Clipboard.SetImage(Properties.Resources.Happy);
+                        this.richTextBox2.Paste();
+                        smiley_processed = false;
+                    }
+                    catch (Exception ex)
+                    {
+                        this.label7.Text = ex.Message;
+                        this.label7.ForeColor = System.Drawing.Color.Red;
+                    }
+                }
+                else
+                {
+                    this.AppendText(previous_char, System.Drawing.Color.RosyBrown);
+                    smiley_processed = false;
+                }
+
+                previous_char = c;
+            }
+            if (smiley_processed == false)
+            {
+                this.AppendText(previous_char, System.Drawing.Color.RosyBrown, true);
+            }
+            this.richTextBox2.ReadOnly = true;
         }
         private void ClientMessageReceivedAction(byte[] data)
         {
             byte[] target = new byte[data.Length - 3];
             Array.Copy(data, 3, target, 0, target.Length);
-            this.AppendText("Peer> " + Encoding.ASCII.GetString(target), System.Drawing.Color.RosyBrown, true);
+            //this.AppendText("Peer> " + Encoding.ASCII.GetString(target), System.Drawing.Color.RosyBrown, true);
+            this.AppendText("Peer> ", System.Drawing.Color.RosyBrown);
+            this.AddSmiley(Encoding.ASCII.GetString(target));
         }
         private void ClientTypingAction()
         {
@@ -150,7 +253,7 @@ namespace P2PSimpleChat.PL
                     this.client = P2PSimpleChat.BLL.Client.GetClientObject(s[0], s[1]);
                     this.textBox3.Text = s[0];
                     this.textBox4.Text = s[1];
-                    this.groupBox2.Enabled = false;
+                    this.groupBox2.Enabled = true;
                     this.label7.Text = "Connected to peer successfully!";
                 }
                 catch (Exception ex)
@@ -199,14 +302,28 @@ namespace P2PSimpleChat.PL
                 ClientDataProcessor(data);
             }
         }
-
+        private void ClientDisconnectClickAction()
+        {
+            this.server.CloseClient();
+            this.client.Close();
+            this.client = null;
+            this.ResetTargetPeerFields();
+        }
+        private void ClientConnectClickAction()
+        {
+            this.client = P2PSimpleChat.BLL.Client.GetClientObject(textBox3.Text, textBox4.Text);
+            this.client.SendRequest(this.textBox1.Text, this.textBox2.Text);
+            this.label7.Text = "Connected to peer successfully!";
+            this.label7.ForeColor = System.Drawing.Color.Green;
+            this.textBox3.Enabled = false;
+            this.textBox4.Enabled = false;
+            this.button2.Text = "Disconnect";
+        }
         private void button2_Click(object sender, EventArgs e)
         {
             if (this.button2.Text == "Disconnect")
             {
-                this.client.Close();
-                this.server.CloseClient();
-                this.button2.Text = "Connect";
+                this.ClientDisconnectClickAction();
             }
             // connect to peer button click
             if (P2PSimpleChat.BLL.Utility.IsValidIPv4(this.textBox3.Text) && P2PSimpleChat.BLL.Utility.IsNumeric(this.textBox4.Text))
@@ -219,17 +336,11 @@ namespace P2PSimpleChat.PL
                 {
                     try
                     {
-                        this.client = P2PSimpleChat.BLL.Client.GetClientObject(textBox3.Text, textBox4.Text);
-                        this.groupBox2.Enabled = false;
-                        this.client.SendRequest(this.textBox1.Text, this.textBox2.Text);
-                        this.label7.Text = "Connected to peer successfully!";
-                        this.label7.ForeColor = System.Drawing.Color.Green;
-                        this.button2.Text = "Disconnect";
+                        this.ClientConnectClickAction();
                     }
                     catch (Exception ex)
                     {
                         this.client = null;
-                        this.groupBox2.Enabled = true;
                         this.label7.Text = "Failure! " + ex.Message;
                         this.label7.ForeColor = System.Drawing.Color.Red;
                     }
@@ -262,7 +373,9 @@ namespace P2PSimpleChat.PL
         private void MessageSendAction()
         {
             this.client.SendMessage(richTextBox1.Text);
-            this.AppendText("Me> " + richTextBox1.Text, System.Drawing.Color.Purple, true);
+            this.AppendText("Me> ", System.Drawing.Color.Purple);
+            this.AddSmiley(richTextBox1.Text);
+            //this.AppendText("Me> " + richTextBox1.Text, System.Drawing.Color.Purple, true);
             this.richTextBox1.Text = "";
         }
         private void button3_Click_1(object sender, EventArgs e)
@@ -303,6 +416,7 @@ namespace P2PSimpleChat.PL
             {
                 this.client.Close();
             }
+            Application.Exit();
         }
         private void AppendText(string text, Color color, bool addNewLine = false)
         {
@@ -311,6 +425,16 @@ namespace P2PSimpleChat.PL
             richTextBox2.AppendText(addNewLine
                 ? $"{text}{Environment.NewLine}"
                 : text);
+            richTextBox2.ScrollToCaret();
+            richTextBox2.ResumeLayout();
+        }
+        private void AppendText(char text, Color color, bool addNewLine = false)
+        {
+            richTextBox2.SuspendLayout();
+            richTextBox2.SelectionColor = color;
+            richTextBox2.AppendText(addNewLine
+                ? $"{text.ToString()}{Environment.NewLine}"
+                : text.ToString());
             richTextBox2.ScrollToCaret();
             richTextBox2.ResumeLayout();
         }
@@ -330,9 +454,12 @@ namespace P2PSimpleChat.PL
 
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(textBox1.Text) 
-                ||P2PSimpleChat.BLL.Utility.IsValidIPv4(textBox1.Text) == false
-               )
+            if (textBox1.Text == "" || textBox1.Text == null)
+            {
+                this.textBox1.BackColor = System.Drawing.Color.White;
+                return;
+            }
+            if (P2PSimpleChat.BLL.Utility.IsValidIPv4(textBox1.Text) == false)
             {
                 this.textBox1.BackColor = CustomColors.ErrorBackColor;
                 this.textBox1.ForeColor = System.Drawing.Color.White;
@@ -359,9 +486,12 @@ namespace P2PSimpleChat.PL
 
         private void textBox2_TextChanged(object sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(textBox2.Text)
-                || P2PSimpleChat.BLL.Utility.IsNumeric(textBox2.Text) == false
-               )
+            if (textBox2.Text == "" || textBox2.Text == null)
+            {
+                this.textBox2.BackColor = System.Drawing.Color.White;
+                return;
+            }
+            if (P2PSimpleChat.BLL.Utility.IsNumeric(textBox2.Text) == false)
             {
                 this.textBox2.BackColor = CustomColors.ErrorBackColor;
                 this.textBox2.ForeColor = System.Drawing.Color.White;
@@ -375,9 +505,12 @@ namespace P2PSimpleChat.PL
 
         private void textBox3_TextChanged(object sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(textBox3.Text)
-                || P2PSimpleChat.BLL.Utility.IsValidIPv4(textBox3.Text) == false
-               )
+            if (textBox3.Text == "" || textBox3.Text == null)
+            {
+                this.textBox3.BackColor = System.Drawing.Color.White;
+                return;
+            }
+            if (P2PSimpleChat.BLL.Utility.IsValidIPv4(textBox3.Text) == false)
             {
                 this.textBox3.BackColor = CustomColors.ErrorBackColor;
                 this.textBox3.ForeColor = System.Drawing.Color.White;
@@ -391,9 +524,12 @@ namespace P2PSimpleChat.PL
 
         private void textBox4_TextChanged(object sender, EventArgs e)
         {
-            if (textBox4.Text == ""
-                || (P2PSimpleChat.BLL.Utility.IsNumeric(textBox4.Text) == false)
-               )
+            if (textBox4.Text == "" || textBox4.Text == null)
+            {
+                this.textBox4.BackColor = System.Drawing.Color.White;
+                return;
+            }
+            if (P2PSimpleChat.BLL.Utility.IsNumeric(textBox4.Text) == false)
             {
                 this.textBox4.BackColor = CustomColors.ErrorBackColor;
                 this.textBox4.ForeColor = System.Drawing.Color.White;
@@ -417,7 +553,7 @@ namespace P2PSimpleChat.PL
 
         private void button6_Click(object sender, EventArgs e)
         {
-            new SettingsForm().Show();
+            new SettingsForm(this).Show();
         }
     }
 }

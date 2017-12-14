@@ -9,7 +9,25 @@ namespace P2PSimpleChat.BLL
     {
         public static bool IsValidNickname(string s)
         {
-            return s.All(c => Char.IsLetterOrDigit(c) || c.Equals('_')); ;
+            return s.All(c => Char.IsLetterOrDigit(c) || c.Equals('_'));
+        }
+        public static bool IsValidPassword(string s)
+        {
+            return s.All(
+                c => Char.IsLetterOrDigit(c) 
+                || c.Equals('_')
+                || c.Equals('-')
+                || c.Equals('$')
+            );
+        }
+        public static bool IsValidHint(string s)
+        {
+            return s.All(
+                c => Char.IsLetterOrDigit(c)
+                || c.Equals('_')
+                || c.Equals('-')
+                || c.Equals(' ')
+            );
         }
         public static bool IsNumeric(string s)
         {

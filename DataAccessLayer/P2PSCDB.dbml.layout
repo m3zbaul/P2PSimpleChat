@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ordesignerObjectsDiagram dslVersion="1.0.0.0" absoluteBounds="0, 0, 11, 8.5" name="P2PSCDB">
+  <DataContextMoniker Name="/P2PSCDBDataContext" />
+  <nestedChildShapes>
+    <classShape Id="44723463-cff6-4683-b2b3-db772cdf6feb" absoluteBounds="2.75, 2.125, 2, 1.3862939453125">
+      <DataClassMoniker Name="/P2PSCDBDataContext/Setting" />
+      <nestedChildShapes>
+        <elementListCompartment Id="1d5aadc6-4436-45d8-8de2-c6c3cb10f2e1" absoluteBounds="2.765, 2.585, 1.9700000000000002, 0.8262939453125" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <classShape Id="ca198bf2-711a-4f3c-8277-ee059eacabb6" absoluteBounds="1.375, 0.5, 2, 1.1939925130208333">
+      <DataClassMoniker Name="/P2PSCDBDataContext/Help" />
+      <nestedChildShapes>
+        <elementListCompartment Id="b3d99e83-c895-431b-880f-f378a42e6243" absoluteBounds="1.3900000000000001, 0.96, 1.9700000000000002, 0.63399251302083326" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+  </nestedChildShapes>
+</ordesignerObjectsDiagram>

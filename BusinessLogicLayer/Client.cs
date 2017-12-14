@@ -57,7 +57,25 @@ namespace P2PSimpleChat.BLL
                     // Incoming message may be larger than the buffer size.
                     do
                     {
-                        numberOfBytesRead = myNetworkStream.Read(myReadBuffer, 0, myReadBuffer.Length);
+                        try
+                        {
+                            numberOfBytesRead = myNetworkStream.Read(myReadBuffer, 0, myReadBuffer.Length);
+                        }
+                        catch(Exception ex)
+                        {
+                            try
+                            {
+                                internalGotDataFromClient(this, new byte[] { 2, 1, 9 });
+                                Close();
+                            }
+                            catch
+                            {
+                            }
+                            // remote connection ended forcefully
+                            P2PSimpleChat.BLL.Client.ex = ex;
+                            
+                            return;
+                        }
                         myCompleteMessage.AppendFormat("{0}", Encoding.UTF8.GetString(myReadBuffer, 0, numberOfBytesRead));
 
                     }
@@ -157,6 +175,20 @@ namespace P2PSimpleChat.BLL
                 finalBuffer[2] = 1;
                 // append message header
                 System.Array.Copy(myWriteBuffer, 0, finalBuffer, 3, myWriteBuffer.Length);
+                netstream.Write(finalBuffer, 0, finalBuffer.Length);
+            }
+            else
+            {
+            }
+        }
+        public void SendDisconnect()
+        {
+            if (netstream.CanWrite)
+            {
+                byte[] finalBuffer = new byte[3];
+                finalBuffer[0] = 2;
+                finalBuffer[1] = 1;
+                finalBuffer[2] = 9;
                 netstream.Write(finalBuffer, 0, finalBuffer.Length);
             }
             else

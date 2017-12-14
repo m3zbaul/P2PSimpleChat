@@ -19,7 +19,8 @@ namespace P2PSimpleChat.PL
         }
         private void CustomInitialization()
         {
-            
+            this.BackColor = CustomColors.ChatBodyBackColor;
+            this.label4.Text = Application.ProductVersion;
         }
     }
 }
